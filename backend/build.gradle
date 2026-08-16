@@ -32,3 +32,12 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+tasks.register('bootRunLocal', org.springframework.boot.gradle.tasks.run.BootRun) {
+	group = 'application'
+	description = 'Runs the application with the local Spring profile active, trusting Windows Root certificates.'
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = tasks.named('bootRun', org.springframework.boot.gradle.tasks.run.BootRun).flatMap { it.mainClass }
+	systemProperty 'spring.profiles.active', 'local'
+	systemProperty 'javax.net.ssl.trustStoreType', 'WINDOWS-ROOT'
+}
