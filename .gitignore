@@ -1,0 +1,18 @@
+# Node / frontend
+node_modules/
+dist/
+storybook-static/
+frontend/src/routeTree.gen.ts
+.env
+.env.*
+!.env.example
+
+# Java / backend
+backend/build/
+.gradle/
+*.iml
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store

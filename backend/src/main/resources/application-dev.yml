@@ -1,0 +1,28 @@
+server:
+  error:
+    include-stacktrace: always
+
+spring:
+  application:
+    name: eadvantage-dev
+
+app:
+  cors:
+    allowed-origins: https://dev.example.com
+
+logging:
+  level:
+    root: INFO
+    com.fhlbdm.eadvantage: DEBUG
+    org.springframework: INFO
+  file:
+    name: logs/eadvantage-dev.log
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers
+  endpoint:
+    loggers:
+      enabled: true

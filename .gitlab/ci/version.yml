@@ -1,0 +1,38 @@
+# Version management configuration
+
+bump:version:
+  stage: version
+  image: node:20-alpine
+  script:
+    - apk add --no-cache git curl jq
+    - |
+      # Configure git
+      git config --global user.email "ci@readv.local"
+      git config --global user.name "ReadV CI Bot"
+      git remote set-url origin "https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+
+      # Read current version
+      CURRENT_VERSION=$(jq -r '.version' frontend/package.json)
+      echo "Current version: $CURRENT_VERSION"
+
+      # Bump patch version
+      IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+      NEW_PATCH=$((PATCH + 1))
+      NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+      echo "New version: $NEW_VERSION"
+
+      # Update version in package.json files
+      sed -i "s/\"version\": \"$CURRENT_VERSION\"/\"version\": \"$NEW_VERSION\"/" frontend/package.json
+      sed -i "s/version = '$CURRENT_VERSION'/version = '$NEW_VERSION'/" backend/build.gradle || true
+
+      # Create git commit and tag
+      git add frontend/package.json backend/build.gradle
+      git commit -m "chore: bump version to $NEW_VERSION [skip ci]" || true
+      git tag -a "v$NEW_VERSION" -m "Version $NEW_VERSION" || true
+
+      # Push changes
+      git push origin HEAD:${CI_COMMIT_REF_NAME} --no-verify || true
+      git push origin "v$NEW_VERSION" --no-verify || true
+  only:
+    - main
+  when: on_success

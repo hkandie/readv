@@ -1,0 +1,48 @@
+# Frontend CI/CD configuration
+
+frontend:test:
+  stage: test
+  image: node:20-alpine
+  cache:
+    key: frontend-${CI_COMMIT_REF_SLUG}
+    paths:
+      - frontend/node_modules/
+  before_script:
+    - cd frontend
+    - npm ci --prefer-offline --no-audit
+  script:
+    - npm run test
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: frontend/coverage/cobertura-coverage.xml
+    paths:
+      - frontend/coverage/
+    expire_in: 30 days
+    when: always
+  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
+frontend:lint:
+  stage: test
+  image: node:20-alpine
+  cache:
+    key: frontend-${CI_COMMIT_REF_SLUG}
+    paths:
+      - frontend/node_modules/
+  before_script:
+    - cd frontend
+    - npm ci --prefer-offline --no-audit
+  script:
+    - npm run lint
+  allow_failure: true
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure

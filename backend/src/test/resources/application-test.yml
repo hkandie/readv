@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: eadvantage-test
+
+app:
+  cors:
+    allowed-origins: http://localhost:5173
+
+logging:
+  level:
+    root: WARN
+    com.fhlbdm.eadvantage: INFO
+    org.springframework: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

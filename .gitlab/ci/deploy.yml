@@ -1,0 +1,58 @@
+# Deployment configuration
+
+.deploy_template: &deploy_template
+  stage: deploy
+  image: mcr.microsoft.com/powershell:latest
+  before_script:
+    - |
+      # Set up PowerShell script variables
+      $env:CI_COMMIT_REF_SLUG = $env:CI_COMMIT_REF_SLUG
+      $env:CI_COMMIT_SHA = $env:CI_COMMIT_SHA
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+
+deploy:dev:
+  <<: *deploy_template
+  environment:
+    name: development
+    url: https://dev.readv.internal
+  script:
+    - |
+      # Download and execute deployment script
+      $deployScriptPath = "./scripts/deploy-dev.ps1"
+      if (Test-Path $deployScriptPath) {
+        & $deployScriptPath -BuildArtifact "backend/build/libs/application.jar"
+      } else {
+        Write-Error "Deployment script not found: $deployScriptPath"
+        exit 1
+      }
+  only:
+    - main
+    - develop
+  needs:
+    - backend:build
+    - frontend:test
+
+deploy:qa:
+  <<: *deploy_template
+  environment:
+    name: quality-assurance
+    url: https://qa.readv.internal
+  script:
+    - |
+      # Download and execute deployment script
+      $deployScriptPath = "./scripts/deploy-qa.ps1"
+      if (Test-Path $deployScriptPath) {
+        & $deployScriptPath -BuildArtifact "backend/build/libs/application.jar"
+      } else {
+        Write-Error "Deployment script not found: $deployScriptPath"
+        exit 1
+      }
+  only:
+    - main
+  needs:
+    - backend:build
+    - frontend:test
+  when: manual

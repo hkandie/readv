@@ -1,0 +1,29 @@
+server:
+  error:
+    include-stacktrace: never
+    include-binding-errors: false
+
+spring:
+  application:
+    name: eadvantage-uat
+
+app:
+  cors:
+    allowed-origins: https://uat.example.com
+
+logging:
+  level:
+    root: WARN
+    com.fhlbdm.eadvantage: INFO
+    org.springframework: WARN
+  file:
+    name: logs/eadvantage-uat.log
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized

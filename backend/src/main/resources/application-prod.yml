@@ -1,0 +1,41 @@
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: false
+  ssl:
+    enabled: true
+    key-store: ${SSL_KEYSTORE_PATH}
+    key-store-password: ${SSL_KEYSTORE_PASSWORD}
+    key-store-type: PKCS12
+
+spring:
+  application:
+    name: eadvantage-prod
+
+app:
+  cors:
+    allowed-origins: https://example.com
+
+logging:
+  level:
+    root: WARN
+    com.fhlbdm.eadvantage: WARN
+    org.springframework: ERROR
+  file:
+    name: logs/eadvantage-prod.log
+    max-size: 10MB
+    max-history: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      cors:
+        allowed-origins: https://example.com
+  endpoint:
+    health:
+      show-details: when-authorized
+    shutdown:
+      enabled: false

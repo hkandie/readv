@@ -1,0 +1,5 @@
+2026-08-16 10:59:52.032 [http-nio-8080-exec-3] DEBUG o.s.security.web.FilterChainProxy [] [] - Securing GET /api/user/me
+2026-08-16 10:59:52.077 [http-nio-8080-exec-3] DEBUG o.s.security.web.FilterChainProxy [] [] - Secured GET /api/user/me
+2026-08-16 10:59:52.079 [http-nio-8080-exec-3] INFO  c.f.e.filter.RequestLoggingFilter [30eede27-8f59-477a-b137-2e716900f894] [] - INCOMING_REQUEST - Method: GET Path: /readvantage/api/user/me RemoteAddr: 0:0:0:0:0:0:0:1
+2026-08-16 10:59:52.110 [http-nio-8080-exec-3] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter [30eede27-8f59-477a-b137-2e716900f894] [] - Set SecurityContextHolder to anonymous SecurityContext
+2026-08-16 10:59:52.110 [http-nio-8080-exec-3] INFO  c.f.e.filter.RequestLoggingFilter [30eede27-8f59-477a-b137-2e716900f894] [anonymousUser] - OUTGOING_RESPONSE - Method: GET Path: /readvantage/api/user/me Status: 200 Duration: 31ms

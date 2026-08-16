@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: eadvantage-qa
+
+app:
+  cors:
+    allowed-origins: https://qa.example.com
+
+logging:
+  level:
+    root: INFO
+    com.fhlbdm.eadvantage: INFO
+    org.springframework: WARN
+  file:
+    name: logs/eadvantage-qa.log
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
