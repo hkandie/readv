@@ -7,6 +7,7 @@ storybook-static/
 !.env.example
 
 # Java / backend
+build/
 backend/build/
 .gradle/
 *.iml

@@ -14,7 +14,8 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTe
 @ActiveProfiles("test")
 class UserControllerTest {
 
-    @Autowired 
+    /* default */
+    @Autowired
     RestTestClient client;
 
     @Test

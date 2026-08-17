@@ -1,5 +1,7 @@
 plugins {
 	id 'java'
+	id 'pmd'
+	id 'jacoco'
 	id 'org.springframework.boot' version '4.1.0'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -29,8 +31,27 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+pmd {
+	toolVersion = '7.7.0'
+	ruleSetFiles = files('config/pmd/ruleset.xml')
+	ruleSets = []
+}
+
+jacoco {
+	toolVersion = '0.8.12'
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
+	dependsOn tasks.named('pmdMain'), tasks.named('pmdTest')
+	finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+	reports {
+		xml.required = true
+		html.required = true
+	}
 }
 
 tasks.register('bootRunLocal', org.springframework.boot.gradle.tasks.run.BootRun) {

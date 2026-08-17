@@ -18,14 +18,14 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(NoHandlerFoundException ex, WebRequest request) {
         String requestId = RequestContext.getRequestId();
         String userId = RequestContext.getUserId();
 
-        logger.warn("404 Not Found - RequestId: {} UserId: {} Path: {}", requestId, userId, ex.getRequestURL());
+        LOGGER.warn("404 Not Found - RequestId: {} UserId: {} Path: {}", requestId, userId, ex.getRequestURL());
 
         Map<String, Object> errorResponse = buildErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
@@ -46,13 +46,13 @@ public class GlobalExceptionHandler {
         HttpStatus status = getStatusCode(ex);
 
         if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
-            logger.error("500 Internal Server Error - RequestId: {} UserId: {}", requestId, userId, ex);
+            LOGGER.error("500 Internal Server Error - RequestId: {} UserId: {}", requestId, userId, ex);
         } else if (status == HttpStatus.BAD_REQUEST) {
-            logger.warn("400 Bad Request - RequestId: {} UserId: {} Message: {}", requestId, userId, ex.getMessage());
+            LOGGER.warn("400 Bad Request - RequestId: {} UserId: {} Message: {}", requestId, userId, ex.getMessage());
         } else if (status == HttpStatus.UNAUTHORIZED) {
-            logger.warn("401 Unauthorized - RequestId: {} UserId: {}", requestId, userId);
+            LOGGER.warn("401 Unauthorized - RequestId: {} UserId: {}", requestId, userId);
         } else if (status == HttpStatus.FORBIDDEN) {
-            logger.warn("403 Forbidden - RequestId: {} UserId: {}", requestId, userId);
+            LOGGER.warn("403 Forbidden - RequestId: {} UserId: {}", requestId, userId);
         }
 
         Map<String, Object> errorResponse = buildErrorResponse(

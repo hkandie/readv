@@ -1,9 +1,6 @@
-import { QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
-import { queryClient } from './api/queryClient'
-import { ApiProvider } from './api/ApiHandler'
 import { ToastProvider } from './toast'
-import { UserProvider } from './api/user/UserContext'
 import { routeTree } from './routeTree.gen'
 
 const router = createRouter({ routeTree, basepath: '/readvantage' })
@@ -14,16 +11,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+const queryClient = new QueryClient()
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ApiProvider>
-        <ToastProvider>
-          <UserProvider>
+      <ToastProvider>
+        <UserProvider>
+          <ApiProvider>
             <RouterProvider router={router} />
-          </UserProvider>
-        </ToastProvider>
-      </ApiProvider>
+          </ApiProvider>
+        </UserProvider>
+      </ToastProvider>
     </QueryClientProvider>
   )
 }

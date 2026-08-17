@@ -29,14 +29,15 @@ describe('HomePage', () => {
       </QueryClientProvider>,
     )
 
-    expect(document.title).toBe('ReadV')
+    expect(document.title).toBe('ReAdvantage - Home')
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/user/me'),
-        expect.objectContaining({ method: 'GET' }),
-      )
+      expect(fetch).toHaveBeenCalled()
     })
+
+    const request = vi.mocked(fetch).mock.calls[0][0] as Request
+    expect(request.url).toContain('/api/user/me')
+    expect(request.method).toBe('GET')
 
     expect(container.querySelector('main')).toBeEmptyDOMElement()
   })

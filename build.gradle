@@ -1,0 +1,22 @@
+tasks.register('frontendTest', Exec) {
+    group = 'verification'
+    description = 'Runs frontend verify (lint, format check, build, test, coverage) via npm'
+    workingDir file('./frontend')
+
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        commandLine 'cmd', '/c', 'npm', 'run', 'verify'
+    } else {
+        commandLine 'npm', 'run', 'verify'
+    }
+
+    inputs.dir(file('frontend/src'))
+    inputs.file(file('frontend/package.json'))
+}
+
+tasks.register('test') {
+    group = 'verification'
+    description = 'Runs both frontend and backend unit tests'
+
+    dependsOn tasks.named('frontendTest')
+    dependsOn ':backend:test'
+}

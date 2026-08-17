@@ -22,9 +22,9 @@ import java.util.UUID;
 @Component
 public class RequestLoggingFilter implements Filter {
 
-    private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);
-    private static final String REQUEST_ID_MDC_KEY = "requestId";
-    private static final String USER_ID_MDC_KEY = "userId";
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestLoggingFilter.class);
+    private static final String REQUEST_ID_KEY = "requestId";
+    private static final String USER_ID_KEY = "userId";
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
@@ -35,21 +35,21 @@ public class RequestLoggingFilter implements Filter {
 
         String requestId = getOrGenerateRequestId(httpRequest);
         RequestContext.setRequestId(requestId);
-        MDC.put(REQUEST_ID_MDC_KEY, requestId);
+        MDC.put(REQUEST_ID_KEY, requestId);
 
         long startTime = System.currentTimeMillis();
 
         try {
-            logIncomingRequest(httpRequest, requestId);
+            logIncomingRequest(httpRequest);
             filterChain.doFilter(httpRequest, httpResponse);
         } finally {
             String userId = extractUserIdFromSecurityContext();
             long duration = System.currentTimeMillis() - startTime;
 
             RequestContext.setUserId(userId);
-            MDC.put(USER_ID_MDC_KEY, userId);
+            MDC.put(USER_ID_KEY, userId);
 
-            logOutgoingResponse(httpResponse, httpRequest, requestId, userId, duration);
+            logOutgoingResponse(httpResponse, httpRequest, duration);
             RequestContext.clear();
             MDC.clear();
         }
@@ -71,16 +71,16 @@ public class RequestLoggingFilter implements Filter {
         return "anonymous";
     }
 
-    private void logIncomingRequest(HttpServletRequest request, String requestId) {
-        logger.info("INCOMING_REQUEST - Method: {} Path: {} RemoteAddr: {}",
+    private void logIncomingRequest(HttpServletRequest request) {
+        LOGGER.info("INCOMING_REQUEST - Method: {} Path: {} RemoteAddr: {}",
                 request.getMethod(),
                 request.getRequestURI(),
                 request.getRemoteAddr()
         );
     }
 
-    private void logOutgoingResponse(HttpServletResponse response, HttpServletRequest request, String requestId, String userId, long duration) {
-        logger.info("OUTGOING_RESPONSE - Method: {} Path: {} Status: {} Duration: {}ms",
+    private void logOutgoingResponse(HttpServletResponse response, HttpServletRequest request, long duration) {
+        LOGGER.info("OUTGOING_RESPONSE - Method: {} Path: {} Status: {} Duration: {}ms",
                 request.getMethod(),
                 request.getRequestURI(),
                 response.getStatus(),
