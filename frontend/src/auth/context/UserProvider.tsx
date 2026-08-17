@@ -1,13 +1,5 @@
-import { createContext } from 'react'
-import type { User } from '../../types'
 import { useCurrentUser } from '../hooks/useCurrentUser'
-interface UserContextType {
-  user: User | undefined
-  isLoading: boolean
-  error: Error | null
-}
-
-export const UserContext = createContext<UserContextType | undefined>(undefined)
+import { UserContext } from './UserContext'
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const { data: user, isPending: isLoading, error } = useCurrentUser()

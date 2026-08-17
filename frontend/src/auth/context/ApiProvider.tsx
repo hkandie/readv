@@ -1,14 +1,8 @@
-import type { AxiosInstance } from 'axios'
 import axios from 'axios'
-import { createContext, useMemo } from 'react'
+import { useMemo } from 'react'
 import React from 'react'
 import { v4 as uuidv4 } from 'uuid'
-
-interface ApiClientProviderType {
-  client: AxiosInstance
-}
-
-export const ApiContext = createContext<ApiClientProviderType | undefined>(undefined)
+import { ApiContext } from './ApiContext'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
@@ -16,7 +10,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   const client = useMemo(() => {
     const instance = axios.create({
       baseURL: BASE_URL,
-      adapter: 'fetch',
       headers: {
         Accept: 'application/json',
       },

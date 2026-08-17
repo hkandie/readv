@@ -1,0 +1,10 @@
+def nodeVersion = '24.14.0'
+
+node {
+    download = true
+    version = nodeVersion
+    npmInstallCommand = 'ci'
+    workDir.value(layout.projectDirectory.dir('.gradle/nodejs'))
+    npmWorkDir.value(layout.projectDirectory.dir('.gradle/npm'))
+    nodeProjectDir.value(layout.projectDirectory.dir('frontend'))
+}

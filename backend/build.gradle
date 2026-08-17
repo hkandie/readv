@@ -1,8 +1,15 @@
+buildscript {
+	dependencies {
+		classpath 'com.fasterxml.jackson.core:jackson-core:2.19.0'
+	}
+}
+
 plugins {
 	id 'java'
 	id 'pmd'
 	id 'jacoco'
-	id 'org.springframework.boot' version '4.1.0'
+	id 'net.razvan.jacoco-to-cobertura' version '2.0.0'
+	id 'org.springframework.boot' version '4.0.7'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -22,10 +29,11 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.boot:spring-boot-test-autoconfigure:4.1.0'
+	testImplementation 'org.springframework.boot:spring-boot-test-autoconfigure'
 	testImplementation 'org.springframework.boot:spring-boot-resttestclient'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -37,21 +45,10 @@ pmd {
 	ruleSets = []
 }
 
-jacoco {
-	toolVersion = '0.8.12'
-}
+apply from: 'testing.gradle'
 
 tasks.named('test') {
-	useJUnitPlatform()
 	dependsOn tasks.named('pmdMain'), tasks.named('pmdTest')
-	finalizedBy tasks.named('jacocoTestReport')
-}
-
-tasks.named('jacocoTestReport') {
-	reports {
-		xml.required = true
-		html.required = true
-	}
 }
 
 tasks.register('bootRunLocal', org.springframework.boot.gradle.tasks.run.BootRun) {

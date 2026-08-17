@@ -8,8 +8,19 @@ spring:
     active: local
   main:
     banner-mode: log
-
-
+  security:
+    oauth2:
+      client:
+        registration:
+          jwt:
+            client-id: ${JWT_CLIENT_ID}
+            client-secret: ${JWT_CLIENT_SECRET}
+            client-authentication-method: client-secret-post
+            authorization-grant-type: client-credentials
+            provider: jwt
+        provider:
+          jwt:
+            token-uri: ${JWT_TOKEN_URI}
 
 server:
   port: 8080

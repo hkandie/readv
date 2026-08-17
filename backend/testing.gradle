@@ -1,0 +1,35 @@
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    finalizedBy tasks.named('jacocoToCobertura')
+}
+
+tasks.named('jacocoToCobertura') {
+    inputFile.set(layout.buildDirectory.file('reports/jacoco/test/jacocoTestReport.xml'))
+    outputFile.set(layout.buildDirectory.file('reports/cobertura/cobertura.xml'))
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    violationRules {
+        rule {
+            limit {
+                minimum = 1.0
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('jacocoTestCoverageVerification')
+}

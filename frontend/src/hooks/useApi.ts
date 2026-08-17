@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { ApiContext } from '../../ApiHandler'
+import { ApiContext } from '../auth/context/ApiContext'
 
 export function useApi() {
   const context = useContext(ApiContext)
