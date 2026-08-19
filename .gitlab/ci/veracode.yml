@@ -1,0 +1,64 @@
+# Veracode SAST scanning: Pipeline Scan (fast feedback) and Sandbox/Policy Scan
+# Requires VERACODE_API_ID / VERACODE_API_SECRET as protected, masked CI/CD variables
+
+veracode:pipeline-scan:
+  stage: post_build
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+  needs:
+    - verify:backend
+  script:
+    - ./ci/scripts/veracode-pipeline-scan.ps1
+  artifacts:
+    name: "${CI_PROJECT_NAME}_${CI_COMMIT_REF_NAME}_${CI_COMMIT_SHA}_pipeline-results"
+    paths:
+      - results.json
+      - veracode_gitlab_vulnerabilities.json
+    reports:
+      sast: veracode_gitlab_vulnerabilities.json
+    expire_in: 1 week
+    when: always
+
+veracode:sandbox-scan:
+  stage: post_build
+  extends: .baseconfiguration
+  needs:
+    - verify:backend
+  only:
+    refs:
+      - merge_requests
+    variables:
+      - $veracode_sandbox_scan == "true"
+  except:
+    - main
+  script:
+    - Compress-Archive -Path "frontend/src/*" -DestinationPath "frontend/front-end-src.zip" -Force
+    - ./ci/scripts/veracode-sandbox-scan.ps1
+  artifacts:
+    paths:
+      - sandbox_scan_output.txt
+    when: always
+    name: "veracode-sandbox-SCAN-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
+  allow_failure: true
+
+veracode:policy-scan:
+  stage: post_deploy
+  extends: .baseconfiguration
+  only:
+    refs: 
+      - main
+      - windows-build-poc
+    variables: 
+      - $veracode_policy_scan == "true"
+  needs:
+    - verify:backend
+  script:
+    - Compress-Archive -Path "frontend/src/*" -DestinationPath "frontend/front-end-src.zip" -Force
+    - ./ci/scripts/veracode-policy-scan.ps1
+  artifacts:
+    paths:
+      - policy_scan_output.txt
+    when: always
+    name: "veracode-policy-SCAN-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
+  allow_failure: true

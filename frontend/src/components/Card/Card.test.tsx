@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { Card } from './Card'
 
 describe('Card', () => {
-  it('renders its children', () => {
+  it('should render its children', () => {
     render(<Card>Hello</Card>)
     expect(screen.getByText('Hello')).toBeInTheDocument()
   })

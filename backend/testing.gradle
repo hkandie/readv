@@ -12,12 +12,6 @@ tasks.named('jacocoTestReport') {
         xml.required = true
         html.required = true
     }
-    finalizedBy tasks.named('jacocoToCobertura')
-}
-
-tasks.named('jacocoToCobertura') {
-    inputFile.set(layout.buildDirectory.file('reports/jacoco/test/jacocoTestReport.xml'))
-    outputFile.set(layout.buildDirectory.file('reports/cobertura/cobertura.xml'))
 }
 
 tasks.named('jacocoTestCoverageVerification') {

@@ -14,7 +14,9 @@
     "coverage": "vitest run --coverage",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "verify": "npm run lint && npm run format:check && npm run build && npm run test && npm run coverage"
+    "verify:build": "npm run lint && npm run format:check && npm run build",
+    "verify:test": "npm run test && npm run coverage",
+    "verify": "npm run verify:build && npm run verify:test"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -40,6 +42,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^6.0.4",
     "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/eslint-plugin": "^1.6.27",
     "eslint": "^10.8.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",

@@ -11,11 +11,25 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    env: {
+      VITE_API_BASE_URL: '',
+    },
     setupFiles: ['./tests/setupTests.ts'],
+    reporters: ['default', 'junit'],
+    outputFile: {
+      junit: './test-results/junit.xml',
+    },
     coverage: {
       provider: 'v8',
       reportsDirectory: 'coverage',
-      reporter: ['text', 'html', 'cobertura'],
+      reporter: ['text', 'html'],
+      exclude: ['tests/utils/**'],
+      thresholds: {
+        lines: 100,
+        functions: 100,
+        branches: 100,
+        statements: 100,
+      },
     },
   },
 })

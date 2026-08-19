@@ -1,0 +1,18 @@
+# Pipeline stage order and global cache configuration
+
+stages:
+  - build
+  - verify
+  - test
+  - veracode
+  - post_build
+  - update_version
+  - publish
+  - release
+  - pre_deploy
+  - deploy
+  - post_deploy
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  policy: pull-push

@@ -1,0 +1,57 @@
+# Verify stage: validation/build only, runs on any branch opening an MR to main
+
+verify:backend:
+  stage: build
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+  variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  script:
+    - write-output "$env:CODE_VERSION"
+    - write-output "$env:JAVA_HOME"
+    - '& "$env:JAVA_HOME\bin\java.exe" -version'
+    - cd backend
+    - ./gradlew.bat clean build -x test --no-daemon --build-cache "-Dorg.gradle.java.installations.paths=$env:JAVA_HOME"
+  artifacts:
+    paths:
+      - backend/build/libs/*.jar
+    expire_in: 6 weeks
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: push
+    paths:
+      - backend/build
+      - backend/.gradle
+
+verify:frontend:
+  stage: build
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+  script:
+    - write-output "$env:CODE_VERSION"
+    - ./gradlew.bat frontendBuild --no-daemon
+  artifacts:
+    paths:
+      - frontend/dist/
+    expire_in: 6 weeks
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: push
+    paths:
+      - frontend/node_modules
+
+verify:sca-scan:
+  stage: verify
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+  needs:
+    - verify:backend
+    - verify:frontend
+  script:
+    - $env:DISABLE_FIPS="true"
+    - iex ((New-Object System.Net.WebClient).DownloadString('https://download.srcclr.com/ci.ps1'))
+    - Remove-Item Env:\JAVA_TOOL_OPTIONS -ErrorAction SilentlyContinue
+    - srcclr scan

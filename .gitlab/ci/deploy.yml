@@ -1,0 +1,60 @@
+# Deploy pipeline: bump version files, clone the deployment repo at that
+# version, then deploy to dev -> qa -> prod (prod is manual).
+# Stub jobs only - script bodies to be replaced with real logic.
+
+update_version:files:
+  stage: update_version
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - write-output "stub: bump backend/build.gradle and frontend/package.json to $env:CODE_VERSION"
+
+pre_deploy:clone-config:
+  stage: pre_deploy
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - publish:backend
+    - publish:frontend
+  script:
+    - write-output "stub: git clone --branch $env:CODE_VERSION `$env:DEPLOY_REPO_URL deploy-repo"
+  artifacts:
+    paths:
+      - deploy-repo/
+    expire_in: 1 day
+
+.deploy:
+  stage: deploy
+  extends: .baseconfiguration
+  script:
+    - write-output "stub: deploy $env:CODE_VERSION to $env:CI_ENVIRONMENT_NAME"
+
+deploy:dev:
+  extends: .deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - pre_deploy:clone-config
+  environment:
+    name: dev
+
+deploy:qa:
+  extends: .deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - deploy:dev
+  environment:
+    name: qa
+
+deploy:prod:
+  extends: .deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  needs:
+    - deploy:qa
+  environment:
+    name: prod

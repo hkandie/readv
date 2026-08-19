@@ -1,24 +1,19 @@
-stages:
-  - test
-  - security
-  - deploy
-  - version
-
 variables:
   ARTIFACT_PATHS: "build/,dist/"
   CACHE_COMPRESSION_LEVEL: "fastest"
   JAVA_SERVICE_OPTIONS: "-Xmx1024m -Xms512m"
   CI_DEBUG_TRACE: "false"
   CODE_VERSION: "1.0.0-${CI_PIPELINE_ID}"
+  veracode_policy_name: "Veracode Recommended Medium"
+  veracode_sandbox_name: "readvan sandbox"
+  veracode_app_name: "readvan sanbox"
+  veracode_sandbox_scan: "true"
 
 include:
-  - local: .gitlab/ci/frontend.yml
-  - local: .gitlab/ci/backend.yml
-  - local: .gitlab/ci/deploy.yml
-  - local: .gitlab/ci/version.yml
+  - local: .gitlab/ci/config.yml
+  - local: .gitlab/ci/common.yml
+  - local: .gitlab/ci/verify.yml
+  - local: .gitlab/ci/test.yml
   - local: .gitlab/ci/veracode.yml
-
-# Global cache configuration
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  policy: pull-push
+  - local: .gitlab/ci/publish.yml
+  - local: .gitlab/ci/deploy.yml

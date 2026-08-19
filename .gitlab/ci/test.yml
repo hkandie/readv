@@ -1,0 +1,52 @@
+# Test stage: unit test execution (separate from verify's build-only checks)
+
+test:backend:
+  stage: test
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+  variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  needs:
+    - verify:backend
+  script:
+    - write-output "$env:CODE_VERSION"
+    - ./gradlew.bat :backend:check --no-daemon --build-cache "-Dorg.gradle.java.installations.paths=$env:JAVA_HOME"
+  artifacts:
+    reports:
+      junit: backend/build/test-results/test/TEST-*.xml
+    paths:
+      - backend/build/test-results/
+      - backend/build/reports/jacoco/
+    expire_in: 30 days
+    when: always
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - backend/build
+      - backend/.gradle
+
+test:frontend:
+  stage: test
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+  needs:
+    - verify:frontend
+  script:
+    - write-output "$env:CODE_VERSION"
+    - ./gradlew.bat frontendTest --no-daemon
+  artifacts:
+    reports:
+      junit: frontend/test-results/junit.xml
+    paths:
+      - frontend/coverage/
+      - frontend/test-results/
+    expire_in: 30 days
+    when: always
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - frontend/node_modules

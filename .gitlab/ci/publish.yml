@@ -1,0 +1,22 @@
+# Publish stage: push built artifacts to the artifact registry
+# Stub jobs only - script bodies to be replaced with real publish logic
+
+publish:backend:
+  stage: publish
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - update_version:files
+  script:
+    - write-output "stub: publish backend/build/libs/*.jar as $env:CODE_VERSION"
+
+publish:frontend:
+  stage: publish
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - update_version:files
+  script:
+    - write-output "stub: publish frontend/dist/ as $env:CODE_VERSION"
