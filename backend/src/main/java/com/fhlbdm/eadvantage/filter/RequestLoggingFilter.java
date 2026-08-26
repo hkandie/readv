@@ -18,6 +18,7 @@ import com.fhlbdm.eadvantage.util.RequestContext;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Component
 public class RequestLoggingFilter implements Filter {
@@ -25,6 +26,11 @@ public class RequestLoggingFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestLoggingFilter.class);
     private static final String REQUEST_ID_KEY = "requestId";
     private static final String USER_ID_KEY = "userId";
+
+    // Per OWASP ESAPI logging guidance: strip CR/LF and other control characters
+    // from externally-influenced values before they enter MDC, to prevent log
+    // forging/injection (CWE-117) via headers like X-Request-ID or auth principal names.
+    private static final Pattern LOG_FORGING_CHARS = Pattern.compile("[\\r\\n\\p{Cntrl}]");
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
@@ -35,7 +41,7 @@ public class RequestLoggingFilter implements Filter {
 
         String requestId = getOrGenerateRequestId(httpRequest);
         RequestContext.setRequestId(requestId);
-        MDC.put(REQUEST_ID_KEY, requestId);
+        MDC.put(REQUEST_ID_KEY, sanitizeForLog(requestId));
 
         long startTime = System.currentTimeMillis();
 
@@ -47,12 +53,19 @@ public class RequestLoggingFilter implements Filter {
             long duration = System.currentTimeMillis() - startTime;
 
             RequestContext.setUserId(userId);
-            MDC.put(USER_ID_KEY, userId);
+            MDC.put(USER_ID_KEY, sanitizeForLog(userId));
 
             logOutgoingResponse(httpResponse, httpRequest, duration);
             RequestContext.clear();
             MDC.clear();
         }
+    }
+
+    private String sanitizeForLog(String value) {
+        if (value == null) {
+            return null;
+        }
+        return LOG_FORGING_CHARS.matcher(value).replaceAll("_");
     }
 
     private String getOrGenerateRequestId(HttpServletRequest request) {

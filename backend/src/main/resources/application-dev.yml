@@ -6,6 +6,11 @@ spring:
   application:
     name: eadvantage-dev
 
+moauthoriser:
+  jpa:
+    hibernate:
+      ddl-auto: update
+
 app:
   cors:
     allowed-origins: https://dev.example.com

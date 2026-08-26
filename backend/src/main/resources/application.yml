@@ -21,6 +21,17 @@ spring:
         provider:
           jwt:
             token-uri: ${JWT_TOKEN_URI}
+moauthoriser:
+  enabled: true
+  jdbc:
+    url: ${MEMBER_API_DB}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
 
 server:
   port: 8080

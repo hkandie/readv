@@ -30,6 +30,8 @@ class RequestLoggingFilterTest {
     private static final String JWS_TOKEN =
             "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb2huLmRvZSIsInJvbGUiOiJhZG1pbiJ9.dGhpc19pc19hX3NpZ25hdHVyZQ";
 
+    private static final String REQUEST_ID_HEADER = "X-Request-ID";
+
     @Mock
     private HttpServletRequest request;
 
@@ -51,7 +53,7 @@ class RequestLoggingFilterTest {
     @Test
     @DisplayName("Should use the request id from the X-Request-ID header when present")
     void shouldUseRequestIdFromHeaderWhenPresent() throws Exception {
-        Mockito.when(request.getHeader("X-Request-ID")).thenReturn("client-req-id");
+        Mockito.when(request.getHeader(REQUEST_ID_HEADER)).thenReturn("client-req-id");
         String[] capturedRequestId = new String[1];
         Mockito.doAnswer(invocation -> {
             capturedRequestId[0] = RequestContext.getRequestId();
@@ -67,7 +69,7 @@ class RequestLoggingFilterTest {
     @Test
     @DisplayName("Should generate a UUID request id when the header is missing")
     void shouldGenerateRequestIdWhenHeaderMissing() throws Exception {
-        Mockito.when(request.getHeader("X-Request-ID")).thenReturn(null);
+        Mockito.when(request.getHeader(REQUEST_ID_HEADER)).thenReturn(null);
         String[] capturedRequestId = new String[1];
         Mockito.doAnswer(invocation -> {
             capturedRequestId[0] = RequestContext.getRequestId();
@@ -83,7 +85,7 @@ class RequestLoggingFilterTest {
     @Test
     @DisplayName("Should generate a UUID request id when the header is blank")
     void shouldGenerateRequestIdWhenHeaderEmpty() throws Exception {
-        Mockito.when(request.getHeader("X-Request-ID")).thenReturn("");
+        Mockito.when(request.getHeader(REQUEST_ID_HEADER)).thenReturn("");
         String[] capturedRequestId = new String[1];
         Mockito.doAnswer(invocation -> {
             capturedRequestId[0] = RequestContext.getRequestId();
@@ -94,6 +96,42 @@ class RequestLoggingFilterTest {
 
         Assertions.assertTrue(UUID_PATTERN.matcher(capturedRequestId[0]).matches(),
                 "a UUID request id should be generated when the header is blank");
+    }
+
+    @Test
+    @DisplayName("Should strip CRLF characters from the request id before it enters the MDC")
+    void shouldStripCrlfFromRequestIdMdc() throws Exception {
+        Mockito.when(request.getHeader(REQUEST_ID_HEADER)).thenReturn("abc\r\nINJECTED - Method: FAKE");
+        String[] mdcRequestId = new String[1];
+        Mockito.doAnswer(invocation -> {
+            mdcRequestId[0] = MDC.get("requestId");
+            return null;
+        }).when(filterChain).doFilter(request, response);
+
+        filter.doFilter(request, response, filterChain);
+
+        Assertions.assertFalse(mdcRequestId[0].contains("\r") || mdcRequestId[0].contains("\n"),
+                "MDC requestId should not contain raw CR/LF characters from the header");
+    }
+
+    @Test
+    @DisplayName("Should strip CRLF characters from the user id before it enters the MDC")
+    void shouldStripCrlfFromUserIdMdc() throws Exception {
+        Authentication authentication = Mockito.mock(Authentication.class);
+        Mockito.when(authentication.isAuthenticated()).thenReturn(true);
+        Mockito.when(authentication.getName()).thenReturn("attacker\r\nINJECTED - Status: 200");
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String[] capturedMdcUserId = new String[1];
+        Mockito.when(response.getStatus()).thenAnswer(invocation -> {
+            capturedMdcUserId[0] = MDC.get("userId");
+            return 200;
+        });
+
+        filter.doFilter(request, response, filterChain);
+
+        Assertions.assertFalse(capturedMdcUserId[0].contains("\r") || capturedMdcUserId[0].contains("\n"),
+                "MDC userId should not contain raw CR/LF characters from the authenticated principal name");
     }
 
     @Test

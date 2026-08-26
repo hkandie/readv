@@ -1,10 +1,14 @@
-# Verify stage: validation/build only, runs on any branch opening an MR to main
+# Verify stage: validation/build only, runs on any branch opening an MR to main.
+# verify:backend also runs on pushes to main/windows-build-poc so its jar is
+# available for veracode:policy-scan, which needs it on those branches.
 
 verify:backend:
   stage: build
   extends: .baseconfiguration
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "windows-build-poc"'
   variables:
     GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   script:
