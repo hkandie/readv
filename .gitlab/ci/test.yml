@@ -27,6 +27,34 @@ test:backend:
       - backend/build
       - backend/.gradle
 
+test:static-host:
+  stage: test
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+  variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  needs:
+    - verify:static-host
+  script:
+    - write-output "$env:CODE_VERSION"
+    - cd static-host
+    - ./gradlew.bat check --no-daemon --build-cache "-Dorg.gradle.java.installations.paths=$env:JAVA_HOME"
+  artifacts:
+    reports:
+      junit: static-host/build/test-results/test/TEST-*.xml
+    paths:
+      - static-host/build/test-results/
+      - static-host/build/reports/jacoco/
+    expire_in: 30 days
+    when: always
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - static-host/build
+      - static-host/.gradle
+
 test:frontend:
   stage: test
   extends: .baseconfiguration
@@ -36,6 +64,7 @@ test:frontend:
     - verify:frontend
   script:
     - write-output "$env:CODE_VERSION"
+    - cd static-host
     - ./gradlew.bat frontendTest --no-daemon
   artifacts:
     reports:
@@ -49,4 +78,4 @@ test:frontend:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull
     paths:
-      - frontend/node_modules
+      - static-host/.gradle

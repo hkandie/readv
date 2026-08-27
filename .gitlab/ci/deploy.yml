@@ -8,7 +8,21 @@ update_version:files:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
-    - write-output "stub: bump backend/build.gradle and frontend/package.json to $env:CODE_VERSION"
+    - Set-Content -Path version.txt -Value $env:CODE_VERSION -NoNewline
+    - cd frontend
+    - npm version $env:CODE_VERSION --no-git-tag-version --allow-same-version
+    - cd ..
+    - git config user.email "ci-bot@$env:CI_SERVER_HOST"
+    - git config user.name "GitLab CI"
+    - git add version.txt frontend/package.json frontend/package-lock.json
+    - git commit -m "[ci skip] adding version file for build $env:CODE_VERSION"
+    - git push origin HEAD:$env:CI_COMMIT_BRANCH -o ci.skip
+  artifacts:
+    paths:
+      - version.txt
+      - frontend/package.json
+      - frontend/package-lock.json
+    expire_in: 6 weeks
 
 pre_deploy:clone-config:
   stage: pre_deploy
@@ -17,7 +31,7 @@ pre_deploy:clone-config:
     - if: '$CI_COMMIT_BRANCH == "main"'
   needs:
     - publish:backend
-    - publish:frontend
+    - publish:static-host
   script:
     - write-output "stub: git clone --branch $env:CODE_VERSION `$env:DEPLOY_REPO_URL deploy-repo"
   artifacts:
@@ -29,32 +43,72 @@ pre_deploy:clone-config:
   stage: deploy
   extends: .baseconfiguration
   script:
-    - write-output "stub: deploy $env:CODE_VERSION to $env:CI_ENVIRONMENT_NAME"
+    - write-output "stub: deploy $env:DEPLOY_APP $env:CODE_VERSION to $env:CI_ENVIRONMENT_NAME"
 
-deploy:dev:
+deploy:backend:dev:
   extends: .deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   needs:
     - pre_deploy:clone-config
+  variables:
+    DEPLOY_APP: backend
   environment:
     name: dev
 
-deploy:qa:
+deploy:backend:qa:
   extends: .deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   needs:
-    - deploy:dev
+    - deploy:backend:dev
+  variables:
+    DEPLOY_APP: backend
   environment:
     name: qa
 
-deploy:prod:
+deploy:backend:prod:
   extends: .deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
   needs:
-    - deploy:qa
+    - deploy:backend:qa
+  variables:
+    DEPLOY_APP: backend
+  environment:
+    name: prod
+
+deploy:static-host:dev:
+  extends: .deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - pre_deploy:clone-config
+  variables:
+    DEPLOY_APP: static-host
+  environment:
+    name: dev
+
+deploy:static-host:qa:
+  extends: .deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - deploy:static-host:dev
+  variables:
+    DEPLOY_APP: static-host
+  environment:
+    name: qa
+
+deploy:static-host:prod:
+  extends: .deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  needs:
+    - deploy:static-host:qa
+  variables:
+    DEPLOY_APP: static-host
   environment:
     name: prod

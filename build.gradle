@@ -1,35 +1,43 @@
-import com.github.gradle.node.npm.task.NpmTask
-
-plugins {
-    id 'com.github.node-gradle.node' version '7.1.0'
+def gradlewCmd(String moduleDir) {
+    def isWindows = org.gradle.internal.os.OperatingSystem.current().isWindows()
+    return isWindows ? ['cmd', '/c', 'gradlew.bat'] : ['./gradlew']
 }
 
-apply from: 'npm.gradle'
-
-tasks.register('frontendBuild', NpmTask) {
-    group = 'build'
-    description = 'Runs frontend build validation (lint, format check, build) via npm'
-    dependsOn tasks.named('npmInstall')
-    args = ['run', 'verify:build']
-
-    inputs.dir(file('frontend/src'))
-    inputs.file(file('frontend/package.json'))
-}
-
-tasks.register('frontendTest', NpmTask) {
-    group = 'verification'
-    description = 'Runs frontend tests and coverage via npm'
-    dependsOn tasks.named('npmInstall')
-    args = ['run', 'verify:test']
-
-    inputs.dir(file('frontend/src'))
-    inputs.file(file('frontend/package.json'))
+def execInModule(String moduleDir, String... taskNames) {
+    providers.exec {
+        workingDir moduleDir
+        commandLine gradlewCmd(moduleDir) + (taskNames as List)
+    }.result.get()
 }
 
 tasks.register('test') {
     group = 'verification'
     description = 'Runs both frontend and backend unit tests'
 
-    dependsOn tasks.named('frontendTest')
     dependsOn ':backend:check'
+    doLast { execInModule('static-host', 'frontendTest') }
+}
+
+tasks.register('frontendLint') {
+    group = 'verification'
+    description = 'Delegates to static-host/gradlew frontendLint'
+
+    doLast { execInModule('static-host', 'frontendLint') }
+}
+
+tasks.register('buildFullStack') {
+    group = 'build'
+    description = 'Packages readva-app.jar and readva-web.jar via their own standalone Gradle wrappers'
+
+    doLast {
+        execInModule('backend', 'bootJar')
+        execInModule('static-host', 'bootJar')
+    }
+}
+
+tasks.register('bootLocalFrontend') {
+    group = 'application'
+    description = 'Delegates to static-host/gradlew bootLocalFrontend'
+
+    doLast { execInModule('static-host', 'bootLocalFrontend') }
 }

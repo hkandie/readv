@@ -13,7 +13,14 @@ plugins {
 }
 
 group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+
+if (project.hasProperty('codeVersion')) {
+	version = project.property('codeVersion')
+} else {
+	version = file('../version.txt').text.trim()
+}
+println "Code Version"
+println version
 
 java {
 	toolchain {
@@ -52,6 +59,10 @@ apply from: 'testing.gradle'
 
 tasks.named('test') {
 	dependsOn tasks.named('pmdMain'), tasks.named('pmdTest')
+}
+
+tasks.named('bootJar') {
+	archiveBaseName = 'readva-app'
 }
 
 tasks.register('bootRunLocal', org.springframework.boot.gradle.tasks.run.BootRun) {

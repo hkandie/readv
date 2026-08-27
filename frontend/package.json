@@ -10,10 +10,12 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "typecheck": "tsc -b",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
+    "verify:lint": "npm run lint && npm run format:check && npm run typecheck",
     "verify:build": "npm run lint && npm run format:check && npm run build",
     "verify:test": "npm run test && npm run coverage",
     "verify": "npm run verify:build && npm run verify:test"

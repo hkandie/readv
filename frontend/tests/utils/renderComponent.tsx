@@ -5,7 +5,10 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { createTestQueryClient } from './testQueryClient'
 import { ApiProvider } from '../../src/auth/context/ApiProvider'
 
-export function renderComponent(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>): RenderResult {
+export function renderComponent(
+  ui: ReactElement,
+  options?: Omit<RenderOptions, 'wrapper'>,
+): RenderResult {
   const queryClient = createTestQueryClient()
 
   return render(ui, {

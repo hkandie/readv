@@ -1,0 +1,105 @@
+import com.github.gradle.node.npm.task.NpmTask
+
+plugins {
+	id 'java'
+	id 'pmd'
+	id 'jacoco'
+	id 'org.springframework.boot' version '4.0.7'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.github.node-gradle.node' version '7.1.0'
+}
+
+apply from: 'npm.gradle'
+
+group = 'com.example'
+
+if (project.hasProperty('codeVersion')) {
+	version = project.property('codeVersion')
+} else {
+	version = file('../version.txt').text.trim()
+}
+println "Code Version"
+println version
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-test-autoconfigure'
+	testImplementation 'org.springframework.boot:spring-boot-webmvc-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+pmd {
+	toolVersion = '7.7.0'
+	ruleSetFiles = files('config/pmd/ruleset.xml')
+	ruleSets = []
+}
+
+apply from: 'testing.gradle'
+
+tasks.named('test') {
+	dependsOn tasks.named('pmdMain'), tasks.named('pmdTest')
+}
+
+tasks.register('frontendLint', NpmTask) {
+	group = 'verification'
+	description = 'Runs frontend lint, format check and typecheck (fast, no dist build) via npm'
+	dependsOn tasks.named('npmInstall')
+	args = ['run', 'verify:lint']
+
+	inputs.dir(file('../frontend/src'))
+	inputs.file(file('../frontend/package.json'))
+}
+
+tasks.register('frontendBuild', NpmTask) {
+	group = 'build'
+	description = 'Runs the frontend production build validation (lint, format check, build) via npm'
+	dependsOn tasks.named('npmInstall')
+	args = ['run', 'verify:build']
+
+	inputs.dir(file('../frontend/src'))
+	inputs.file(file('../frontend/package.json'))
+	outputs.dir(file('../frontend/dist'))
+}
+
+tasks.register('frontendTest', NpmTask) {
+	group = 'verification'
+	description = 'Runs frontend tests and coverage via npm'
+	dependsOn tasks.named('npmInstall')
+	args = ['run', 'verify:test']
+
+	inputs.dir(file('../frontend/src'))
+	inputs.file(file('../frontend/package.json'))
+}
+
+tasks.register('copyFrontendDist', Copy) {
+	dependsOn tasks.named('frontendBuild')
+	from(layout.projectDirectory.dir('../frontend/dist'))
+	into(layout.buildDirectory.dir('resources/main/static'))
+}
+
+tasks.named('processResources') {
+	dependsOn tasks.named('copyFrontendDist')
+}
+
+tasks.named('bootJar') {
+	archiveBaseName = 'readva-web'
+}
+
+tasks.register('bootLocalFrontend', org.springframework.boot.gradle.tasks.run.BootRun) {
+	group = 'application'
+	description = 'Builds the frontend and runs readva-web locally, serving the bundled SPA.'
+	dependsOn tasks.named('processResources')
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = tasks.named('bootRun', org.springframework.boot.gradle.tasks.run.BootRun).flatMap { it.mainClass }
+}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="readv-web"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>Curated PMD ruleset for the ReadV web (frontend-hosting) module</description>
+
+    <rule ref="category/java/bestpractices.xml">
+        <exclude name="GuardLogStatement" />
+        <exclude name="UseVarargs" />
+        <!-- Flags context-load smoke tests and MockMvc .andExpect() chains as
+             assertion-free even though they do verify behavior. -->
+        <exclude name="UnitTestShouldIncludeAssert" />
+    </rule>
+    <rule ref="category/java/errorprone.xml" />
+    <rule ref="category/java/codestyle.xml">
+        <exclude name="OnlyOneReturn" />
+        <exclude name="AtLeastOneConstructor" />
+        <exclude name="ShortClassName" />
+        <exclude name="ShortMethodName" />
+        <exclude name="ShortVariable" />
+        <exclude name="LocalVariableCouldBeFinal" />
+        <exclude name="MethodArgumentCouldBeFinal" />
+    </rule>
+</ruleset>

@@ -36,7 +36,10 @@ export default tseslint.config(
         'error',
         {
           mustMatch: {
-            it: ['^(should|when|result)\\b', "Test titles must start with 'should', 'when', or 'result'."],
+            it: [
+              '^(should|when|result)\\b',
+              "Test titles must start with 'should', 'when', or 'result'.",
+            ],
           },
         },
       ],

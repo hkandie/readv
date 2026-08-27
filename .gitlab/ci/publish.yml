@@ -20,3 +20,13 @@ publish:frontend:
     - update_version:files
   script:
     - write-output "stub: publish frontend/dist/ as $env:CODE_VERSION"
+
+publish:static-host:
+  stage: publish
+  extends: .baseconfiguration
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - update_version:files
+  script:
+    - write-output "stub: publish static-host/build/libs/*.jar as $env:CODE_VERSION"

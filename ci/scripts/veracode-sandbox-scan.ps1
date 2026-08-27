@@ -42,7 +42,20 @@ try {
         throw "No backend jar found in backend/build/libs"
     }
 
-    $file_upload_args = @("-filepath", $backendJar.FullName)
+    $webJar = Get-ChildItem -Path "static-host/build/libs" -Filter "*.jar" -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -notlike "*-plain.jar" } |
+        Select-Object -First 1
+    if (-not $webJar) {
+        throw "No web jar found in static-host/build/libs"
+    }
+
+    $file_upload_args = @("-filepath", $backendJar.FullName, "-filepath", $webJar.FullName)
+    if (Test-Path "backend/backend-src.zip") {
+        $file_upload_args += @("-filepath", "backend/backend-src.zip")
+    }
+    if (Test-Path "static-host/static-host-src.zip") {
+        $file_upload_args += @("-filepath", "static-host/static-host-src.zip")
+    }
     if (Test-Path "frontend/front-end-src.zip") {
         $file_upload_args += @("-filepath", "frontend/front-end-src.zip")
     }

@@ -6,5 +6,5 @@ node {
     npmInstallCommand = 'ci'
     workDir.value(layout.projectDirectory.dir('.gradle/nodejs'))
     npmWorkDir.value(layout.projectDirectory.dir('.gradle/npm'))
-    nodeProjectDir.value(layout.projectDirectory.dir('frontend'))
+    nodeProjectDir.value(layout.projectDirectory.dir('../frontend'))
 }
