@@ -3,3 +3,9 @@ export interface User {
   name: string
   email: string
 }
+
+export interface Report {
+  id: string
+  name: string
+  status: 'active' | 'archived'
+}

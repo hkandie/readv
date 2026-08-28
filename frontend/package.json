@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "fhlbdm/core-ui"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -17,10 +20,10 @@
     "build-storybook": "storybook build",
     "verify:lint": "npm run lint && npm run format:check && npm run typecheck",
     "verify:build": "npm run lint && npm run format:check && npm run build",
-    "verify:test": "npm run test && npm run coverage",
-    "verify": "npm run verify:build && npm run verify:test"
+    "verify": "npm run verify:build && npm run coverage"
   },
   "dependencies": {
+    "@fhlbdm/core-ui": "*",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query": "^5.101.4",
     "@tanstack/react-router": "^1.170.25",
@@ -28,7 +31,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwindcss": "^4.3.3",
-    "uuid": "^14.0.1"
+    "uuid": "^14.0.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
