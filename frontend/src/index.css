@@ -2,4 +2,9 @@
 
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-green: #0f6e4c;
+  --color-brand-green-dark: #0b4f38;
+  --color-brand-sage: #CADAB980;
+  --color-brand-red: #da3832;
 }

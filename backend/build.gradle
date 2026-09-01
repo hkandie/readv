@@ -49,6 +49,13 @@ dependencies {
 	testRuntimeOnly 'com.h2database:h2'
 }
 
+
+dependencyManagement {
+imports {
+mavenBom "io.netty:netty-bom:4.1.135.Final"
+}
+}
+
 pmd {
 	toolVersion = '7.7.0'
 	ruleSetFiles = files('config/pmd/ruleset.xml')
@@ -62,7 +69,7 @@ tasks.named('test') {
 }
 
 tasks.named('bootJar') {
-	archiveBaseName = 'readva-app'
+	archiveBaseName = 'readvantage-app'
 }
 
 tasks.register('bootRunLocal', org.springframework.boot.gradle.tasks.run.BootRun) {

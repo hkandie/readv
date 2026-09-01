@@ -9,3 +9,8 @@ export interface Report {
   name: string
   status: 'active' | 'archived'
 }
+
+export interface Account {
+  id: string
+  name: string
+}

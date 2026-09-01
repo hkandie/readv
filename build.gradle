@@ -4,10 +4,11 @@ def gradlewCmd(String moduleDir) {
 }
 
 def execInModule(String moduleDir, String... taskNames) {
-    providers.exec {
+    def execOperations = project.services.get(org.gradle.process.ExecOperations)
+    execOperations.exec {
         workingDir moduleDir
         commandLine gradlewCmd(moduleDir) + (taskNames as List)
-    }.result.get()
+    }
 }
 
 tasks.register('test') {
@@ -27,7 +28,7 @@ tasks.register('frontendLint') {
 
 tasks.register('buildFullStack') {
     group = 'build'
-    description = 'Packages readva-app.jar and readva-web.jar via their own standalone Gradle wrappers'
+    description = 'Packages readvantage-app.jar and readvantage-web.jar via their own standalone Gradle wrappers'
 
     doLast {
         execInModule('backend', 'bootJar')

@@ -1,14 +1,22 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router'
-import { PersistentHeader, Footer } from '@fhlbdm/core-ui'
+import { Footer } from '@fhlbdm/core-ui'
+import { PersistentHeader } from '../components/PersistentHeader'
 
-export const Route = createRootRoute({
-  component: () => (
+
+function RootComponent() {
+
+  return (
     <div className="flex min-h-screen flex-col">
-      <PersistentHeader />
+      <PersistentHeader
+      />
       <main className="flex-1">
         <Outlet />
       </main>
       <Footer />
     </div>
-  ),
+  )
+}
+
+export const Route = createRootRoute({
+  component: RootComponent,
 })

@@ -2,6 +2,7 @@ import type { ReactElement } from 'react'
 import { render } from '@testing-library/react'
 import type { RenderOptions, RenderResult } from '@testing-library/react'
 import { QueryClientProvider } from '@tanstack/react-query'
+import { createRootRoute, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createTestQueryClient } from './testQueryClient'
 import { ApiProvider } from '../../src/auth/context/ApiProvider'
 
@@ -10,8 +11,10 @@ export function renderComponent(
   options?: Omit<RenderOptions, 'wrapper'>,
 ): RenderResult {
   const queryClient = createTestQueryClient()
+  const rootRoute = createRootRoute({ component: () => ui })
+  const router = createRouter({ routeTree: rootRoute })
 
-  return render(ui, {
+  return render(<RouterProvider router={router} />, {
     ...options,
     wrapper: ({ children }) => (
       <QueryClientProvider client={queryClient}>

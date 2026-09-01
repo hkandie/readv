@@ -1,6 +1,5 @@
-# Deploy pipeline: bump version files, clone the deployment repo at that
-# version, then deploy to dev -> qa -> prod (prod is manual).
-# Stub jobs only - script bodies to be replaced with real logic.
+# Deploy pipeline: bump version files, build each app once on Linux, then promote that same
+# jar through dev -> qa -> prod. 
 
 update_version:files:
   stage: update_version
@@ -24,91 +23,183 @@ update_version:files:
       - frontend/package-lock.json
     expire_in: 6 weeks
 
-pre_deploy:clone-config:
-  stage: pre_deploy
-  extends: .baseconfiguration
+.build-linux:
+  stage: build
+  tags: [linux-build]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-  needs:
-    - publish:backend
-    - publish:static-host
+  variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   script:
-    - write-output "stub: git clone --branch $env:CODE_VERSION `$env:DEPLOY_REPO_URL deploy-repo"
+    - cd "$GRADLE_MODULE_DIR"
+    - ./gradlew clean build -x test --no-daemon --build-cache "-PcodeVersion=$CODE_VERSION"
   artifacts:
     paths:
-      - deploy-repo/
-    expire_in: 1 day
+      - "$ARTIFACT_GLOB"
+    expire_in: 6 weeks
 
-.deploy:
+build:linux:backend:
+  extends: .build-linux
+  variables:
+    GRADLE_MODULE_DIR: backend
+    ARTIFACT_GLOB: backend/build/libs/*.jar
+
+build:linux:static-host:
+  extends: .build-linux
+  variables:
+    GRADLE_MODULE_DIR: static-host
+    ARTIFACT_GLOB: static-host/build/libs/*.jar
+
+.deploy-linux:
   stage: deploy
-  extends: .baseconfiguration
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
   script:
-    - write-output "stub: deploy $env:DEPLOY_APP $env:CODE_VERSION to $env:CI_ENVIRONMENT_NAME"
+    - Write-Host "Deploying $DEPLOY_JAR_NAME to $DEPLOY_DIR on $DEPLOY_SERVICE"
+    # - install -d -m 0755 "$DEPLOY_DIR"
+    # - cp $ARTIFACT_GLOB "$DEPLOY_DIR/$DEPLOY_JAR_NAME"
+    # - |
+    #   EXEC_START_PRE=""
+    #   if [ -n "${DEPLOY_PRESTART_SCRIPT:-}" ]; then
+    #     PRESTART_NAME="$(basename "$DEPLOY_PRESTART_SCRIPT")"
+    #     install -m 0755 "$DEPLOY_PRESTART_SCRIPT" "$DEPLOY_DIR/$PRESTART_NAME"
+    #     EXEC_START_PRE="$DEPLOY_DIR/$PRESTART_NAME"
+    #   fi
+    #   SERVICE_NAME="$DEPLOY_SERVICE" \
+    #   SERVICE_DESCRIPTION="$DEPLOY_DESCRIPTION" \
+    #   WORKING_DIR="$DEPLOY_DIR" \
+    #   JAR_PATH="$DEPLOY_DIR/$DEPLOY_JAR_NAME" \
+    #   ENV_FILE="$DEPLOY_ENV_FILE" \
+    #   RESTART_POLICY="$DEPLOY_RESTART_POLICY" \
+    #   RESTART_SEC="${DEPLOY_RESTART_SEC:-}" \
+    #   EXEC_START_PRE="$EXEC_START_PRE" \
+    #   ci/scripts/generate-unit-file.sh > "/tmp/${DEPLOY_SERVICE}.service"
+    # - sudo install -m 0644 "/tmp/${DEPLOY_SERVICE}.service" "/etc/systemd/system/${DEPLOY_SERVICE}.service"
+    # - sudo systemctl daemon-reload
+    # - sudo systemctl restart "$DEPLOY_SERVICE"
+    # - systemctl is-active --quiet "$DEPLOY_SERVICE"
 
 deploy:backend:dev:
-  extends: .deploy
+  extends: .deploy-linux
+  tags: [linux-deploy-dev]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   needs:
-    - pre_deploy:clone-config
+    - update_version:files
+    - build:linux:backend
   variables:
-    DEPLOY_APP: backend
+    DEPLOY_DIR: /opt/readvantage/backend
+    DEPLOY_JAR_NAME: readvantage-app.jar
+    DEPLOY_SERVICE: readvantage-app
+    DEPLOY_DESCRIPTION: "ReadVantage backend API"
+    DEPLOY_ENV_FILE: /etc/readvantage/backend.env
+    DEPLOY_RESTART_POLICY: "no"
+    ARTIFACT_GLOB: backend/build/libs/*.jar
+    DEPLOY_PRESTART_SCRIPT: ci/scripts/fetch-k5-ticket.sh
   environment:
     name: dev
 
 deploy:backend:qa:
-  extends: .deploy
+  extends: .deploy-linux
+  tags: [linux-deploy-qa]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   needs:
     - deploy:backend:dev
+    - build:linux:backend
   variables:
-    DEPLOY_APP: backend
+    DEPLOY_DIR: /opt/readvantage/backend
+    DEPLOY_JAR_NAME: readvantage-app.jar
+    DEPLOY_SERVICE: readvantage-app
+    DEPLOY_DESCRIPTION: "ReadVantage backend API"
+    DEPLOY_ENV_FILE: /etc/readvantage/backend.env
+    DEPLOY_RESTART_POLICY: "no"
+    ARTIFACT_GLOB: backend/build/libs/*.jar
+    DEPLOY_PRESTART_SCRIPT: ci/scripts/fetch-k5-ticket.sh
   environment:
     name: qa
 
 deploy:backend:prod:
-  extends: .deploy
+  extends: .deploy-linux
+  tags: [linux-deploy-prod]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
   needs:
     - deploy:backend:qa
+    - build:linux:backend
   variables:
-    DEPLOY_APP: backend
+    DEPLOY_DIR: /opt/readvantage/backend
+    DEPLOY_JAR_NAME: readvantage-app.jar
+    DEPLOY_SERVICE: readvantage-app
+    DEPLOY_DESCRIPTION: "ReadVantage backend API"
+    DEPLOY_ENV_FILE: /etc/readvantage/backend.env
+    DEPLOY_RESTART_POLICY: "no"
+    ARTIFACT_GLOB: backend/build/libs/*.jar
+    DEPLOY_PRESTART_SCRIPT: ci/scripts/fetch-k5-ticket.sh
   environment:
     name: prod
 
 deploy:static-host:dev:
-  extends: .deploy
+  extends: .deploy-linux
+  tags: [linux-deploy-dev]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   needs:
-    - pre_deploy:clone-config
+    - update_version:files
+    - build:linux:static-host
   variables:
-    DEPLOY_APP: static-host
+    DEPLOY_DIR: /opt/readvantage/static-host
+    DEPLOY_JAR_NAME: readvantage-web.jar
+    DEPLOY_SERVICE: readvantage-web
+    DEPLOY_DESCRIPTION: "ReadVantage web (frontend SPA embedded in static-host)"
+    DEPLOY_ENV_FILE: /etc/readvantage/static-host.env
+    DEPLOY_RESTART_POLICY: on-failure
+    DEPLOY_RESTART_SEC: "5"
+    ARTIFACT_GLOB: static-host/build/libs/*.jar
   environment:
     name: dev
 
 deploy:static-host:qa:
-  extends: .deploy
+  extends: .deploy-linux
+  tags: [linux-deploy-qa]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   needs:
     - deploy:static-host:dev
+    - build:linux:static-host
   variables:
-    DEPLOY_APP: static-host
+    DEPLOY_DIR: /opt/readvantage/static-host
+    DEPLOY_JAR_NAME: readvantage-web.jar
+    DEPLOY_SERVICE: readvantage-web
+    DEPLOY_DESCRIPTION: "ReadVantage web (frontend SPA embedded in static-host)"
+    DEPLOY_ENV_FILE: /etc/readvantage/static-host.env
+    DEPLOY_RESTART_POLICY: on-failure
+    DEPLOY_RESTART_SEC: "5"
+    ARTIFACT_GLOB: static-host/build/libs/*.jar
   environment:
     name: qa
 
 deploy:static-host:prod:
-  extends: .deploy
+  extends: .deploy-linux
+  tags: [linux-deploy-prod]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
   needs:
     - deploy:static-host:qa
+    - build:linux:static-host
   variables:
-    DEPLOY_APP: static-host
+    DEPLOY_DIR: /opt/readvantage/static-host
+    DEPLOY_JAR_NAME: readvantage-web.jar
+    DEPLOY_SERVICE: readvantage-web
+    DEPLOY_DESCRIPTION: "ReadVantage web (frontend SPA embedded in static-host)"
+    DEPLOY_ENV_FILE: /etc/readvantage/static-host.env
+    DEPLOY_RESTART_POLICY: on-failure
+    DEPLOY_RESTART_SEC: "5"
+    ARTIFACT_GLOB: static-host/build/libs/*.jar
   environment:
     name: prod

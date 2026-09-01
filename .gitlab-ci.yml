@@ -15,5 +15,4 @@ include:
   - local: .gitlab/ci/verify.yml
   - local: .gitlab/ci/test.yml
   - local: .gitlab/ci/veracode.yml
-  - local: .gitlab/ci/publish.yml
   - local: .gitlab/ci/deploy.yml

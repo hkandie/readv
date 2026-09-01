@@ -4,8 +4,9 @@ import { ToastProvider } from './toast'
 import { routeTree } from './routeTree.gen'
 import { ApiProvider } from './auth/context/ApiProvider'
 import { UserProvider } from './auth/context/UserProvider'
+import { MemberAccountProvider } from './memberAccount/context/MemberAccountProvider'
 
-const router = createRouter({ routeTree, basepath: '/readvantage' })
+const router = createRouter({ routeTree, basepath: import.meta.env.BASE_URL })
 
 declare module '@tanstack/react-router' {
   interface Register {
@@ -19,11 +20,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <UserProvider>
-          <ApiProvider>
-            <RouterProvider router={router} />
-          </ApiProvider>
-        </UserProvider>
+        <ApiProvider>
+           <UserProvider>
+            <MemberAccountProvider>
+              <RouterProvider router={router} />
+            </MemberAccountProvider>
+          </UserProvider>
+        </ApiProvider>
       </ToastProvider>
     </QueryClientProvider>
   )

@@ -33,6 +33,7 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation platform('io.netty:netty-bom:4.1.135.Final')
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-test-autoconfigure'
 	testImplementation 'org.springframework.boot:spring-boot-webmvc-test'
@@ -93,13 +94,14 @@ tasks.named('processResources') {
 }
 
 tasks.named('bootJar') {
-	archiveBaseName = 'readva-web'
+	archiveBaseName = 'readvantage-web'
 }
 
 tasks.register('bootLocalFrontend', org.springframework.boot.gradle.tasks.run.BootRun) {
 	group = 'application'
-	description = 'Builds the frontend and runs readva-web locally, serving the bundled SPA.'
+	description = 'Builds the frontend and runs readvantage-web locally, serving the bundled SPA.'
 	dependsOn tasks.named('processResources')
 	classpath = sourceSets.main.runtimeClasspath
 	mainClass = tasks.named('bootRun', org.springframework.boot.gradle.tasks.run.BootRun).flatMap { it.mainClass }
+	systemProperty 'spring.profiles.active', 'local'
 }

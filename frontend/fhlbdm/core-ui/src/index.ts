@@ -1,4 +1,6 @@
 export * from './Button'
 export * from './Card'
+export * from './Dropdown'
 export * from './Footer'
-export * from './PersistentHeader'
+export * from './Page'
+export * from './Stack'

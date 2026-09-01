@@ -7,9 +7,7 @@ stages:
   - veracode
   - post_build
   - update_version
-  - publish
   - release
-  - pre_deploy
   - deploy
   - post_deploy
 
