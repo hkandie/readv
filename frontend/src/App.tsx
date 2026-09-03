@@ -4,7 +4,7 @@ import { ToastProvider } from './toast'
 import { routeTree } from './routeTree.gen'
 import { ApiProvider } from './auth/context/ApiProvider'
 import { UserProvider } from './auth/context/UserProvider'
-import { MemberAccountProvider } from './memberAccount/context/MemberAccountProvider'
+import { MemberProvider } from './memberAccount/context/MemberProvider'
 
 const router = createRouter({ routeTree, basepath: import.meta.env.BASE_URL })
 
@@ -14,6 +14,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
+
 const queryClient = new QueryClient()
 
 function App() {
@@ -22,9 +23,9 @@ function App() {
       <ToastProvider>
         <ApiProvider>
            <UserProvider>
-            <MemberAccountProvider>
+            <MemberProvider>
               <RouterProvider router={router} />
-            </MemberAccountProvider>
+            </MemberProvider>
           </UserProvider>
         </ApiProvider>
       </ToastProvider>

@@ -8,7 +8,7 @@ const FAKE_ACCOUNTS: Account[] = [
   { id: '3234', name: 'Acme Federal Credit Union' },
 ]
 
-export function useMemberAccounts() {
+export function useAccounts() {
   return useQuery({
     queryKey: ['member', 'accounts'],
     queryFn: () => Promise.resolve(FAKE_ACCOUNTS),

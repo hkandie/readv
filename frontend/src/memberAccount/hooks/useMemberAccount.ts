@@ -1,10 +1,10 @@
 import { useContext } from 'react'
-import { MemberAccountContext } from '../context/MemberAccountContext'
+import { MemberContext } from '../context/MemberContext'
 
-export function useMemberAccount() {
-  const context = useContext(MemberAccountContext)
+export function useMember() {
+  const context = useContext(MemberContext)
   if (context === undefined) {
-    throw new Error('useMemberAccount must be used within a MemberAccountProvider')
+    throw new Error('useMember must be used within a MemberProvider')
   }
   return context
 }

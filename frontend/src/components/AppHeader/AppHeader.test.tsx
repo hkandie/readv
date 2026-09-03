@@ -2,15 +2,15 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createRootRoute, createRouter, RouterProvider } from '@tanstack/react-router'
-import { PersistentHeader, type PersistentHeaderProps } from './PersistentHeader'
+import { AppHeader, type AppHeaderProps } from './AppHeader'
 
-function renderHeader(props: PersistentHeaderProps = {}) {
-  const rootRoute = createRootRoute({ component: () => <PersistentHeader {...props} /> })
+function renderHeader(props: AppHeaderProps = {}) {
+  const rootRoute = createRootRoute({ component: () => <AppHeader {...props} /> })
   const router = createRouter({ routeTree: rootRoute })
   return render(<RouterProvider router={router} />)
 }
 
-describe('PersistentHeader', () => {
+describe('AppHeader', () => {
   it('should render Home, Rates, and Wires links', async () => {
     renderHeader()
 

@@ -1,4 +1,4 @@
-import { Page } from '../../components'
+ import { Page } from '@fhlbdm/core-ui'
 import { usePageTitle } from '../../hooks/usePageTitle'
 
 export function RatesPage() {

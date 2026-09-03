@@ -1,7 +1,7 @@
 import { createContext } from 'react'
 import type { Account } from '../../types'
 
-interface MemberAccountContextType {
+interface MemberContextType {
   accounts: Account[]
   selectedAccount: Account | undefined
   onSelectAccount: (account: Account) => void
@@ -9,4 +9,4 @@ interface MemberAccountContextType {
   error: Error | null
 }
 
-export const MemberAccountContext = createContext<MemberAccountContextType | undefined>(undefined)
+export const MemberContext = createContext<MemberContextType | undefined>(undefined)

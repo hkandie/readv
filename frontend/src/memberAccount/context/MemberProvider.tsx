@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import type { Account } from '../../types'
-import { useMemberAccounts } from '../hooks/useMemberAccounts'
-import { MemberAccountContext } from './MemberAccountContext'
+import { useAccounts } from '../hooks/useAccounts'
+import { MemberContext } from './MemberContext'
 
-export function MemberAccountProvider({ children }: { children: React.ReactNode }) {
-  const { data: accounts = [], isPending: isLoading, error } = useMemberAccounts()
+export function MemberProvider({ children }: { children: React.ReactNode }) {
+  const { data: accounts = [], isPending: isLoading, error } = useAccounts()
   const [selectedAccount, setSelectedAccount] = useState<Account | undefined>(undefined)
 
   return (
-    <MemberAccountContext.Provider
+    <MemberContext.Provider
       value={{
         accounts,
         selectedAccount: selectedAccount ?? accounts[0],
@@ -18,6 +18,6 @@ export function MemberAccountProvider({ children }: { children: React.ReactNode 
       }}
     >
       {children}
-    </MemberAccountContext.Provider>
+    </MemberContext.Provider>
   )
 }
